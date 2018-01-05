@@ -44,9 +44,10 @@
   {% block package_additional_info %}
     {% snippet "package/snippets/additional_info.html", pkg_dict=pkg %}
   {% endblock %}
-  {% set pkgs = h.get_req(pkg.name)["datasets"] %}
+  {% set pkgs = h.get_recdat(pkg.name)["datasets"] %}
+TEST
   {% if pkgs %}
-  <h3>Related Datasets</h3>
+  <h3>Related Datasets TEST</h3>
   {% endif %}
   <ul class="dataset-list unstyled">
     {% for pkg in pkgs %}

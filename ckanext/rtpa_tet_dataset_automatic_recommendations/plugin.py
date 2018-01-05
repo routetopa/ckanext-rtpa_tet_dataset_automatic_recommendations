@@ -57,7 +57,9 @@ def get_recommended_datasets(pkg_id):
 
 class Rtpa_Tet_Dataset_Automatic_RecommendationsPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IRoutes, inherit=True)
+    plugins.implements(plugins.IPackageController, inherit=True)
 
     # IConfigurer
 
@@ -71,6 +73,17 @@ class Rtpa_Tet_Dataset_Automatic_RecommendationsPlugin(plugins.SingletonPlugin):
          m.connect('get_recommended_datasets', '/api/3/util/tet/get_recommended_datasets',
            controller='ckanext.rtpa_tet_dataset_automatic_recommendations.plugin:RtpaApi', action='get_recommended_datasets')
          return m
+
+     #ITemplateHelpers
+    def get_helpers(self):
+        return {'get_recdat': get_recommended_datasets }
+
+#IPackageController
+
+    def before_index(self, pkg_dict):
+        return pkg_dict
+
+
         
         
 class RtpaApi(BaseController):
