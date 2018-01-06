@@ -5,14 +5,20 @@ from logging import getLogger
 from ckan.plugins.toolkit import Invalid
 from ckan.lib.base import BaseController
 from ckan.common import json, response, request
+#from ckan.common import config as cf
 import ckan.model as model
 import os
+import urllib2
 from ckan.lib.base import c, g, h
 
 
 def get_recommended_datasets(pkg_id):
     package = toolkit.get_action('package_show')(None, {'id': pkg_id.strip()})
     response_data  = {}
+    testApi="http://vmrtpa05.deri.ie:8006/get/"
+    useApi=True
+    #useApi=cf.get(
+    #    'ckan.extensions.rtpa_tet_dataset_automatic_recommendations.use_rtpa_api', None)
     if "linked_datasets" in package and package["linked_datasets"] != "":
         l = []
         pkgs = package["linked_datasets"].split(",")
@@ -26,6 +32,8 @@ def get_recommended_datasets(pkg_id):
             item ["notes"] = p["notes"]
             l.append(item)
             response_data["datasets"] = l
+    #if not ("linked datasets" in package and package["linked_datasets"] !="") :
+        #response_data={}
     else:
         q= ''
         category_string = ''
@@ -51,6 +59,25 @@ def get_recommended_datasets(pkg_id):
         for ds in response_data["datasets"]:
             if ds["name"] == pkg_id:
                 response_data["datasets"].remove(ds)
+    
+    if(useApi): #TODO Add switch option
+        relateddatasets=[]
+        url=testApi+package["id"]+"/3"
+        data=json.loads(urllib2.urlopen(url).read())
+        i=0
+        for element in data['result']:
+            item={}
+            item["name"]=element['id']
+            item["title"]=element['title']
+            item["notes"]="Description of dataset"
+            relateddatasets.append(item)
+            i+=1
+            if(i>10):
+                break
+        print(relateddatasets)
+
+        response_data["datasets"]=relateddatasets
+
     return response_data
 
 
@@ -62,6 +89,7 @@ class Rtpa_Tet_Dataset_Automatic_RecommendationsPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IPackageController, inherit=True)
 
     # IConfigurer
+
 
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
